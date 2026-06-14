@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Worship Presentation - Engine Output Window</title>
+    <style>
+        /* Professional Reset & Broadcast Environmental Locking */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 6vw; /* Generous margins to keep text safe from edge cutoffs */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            transition: background-image 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* CRITICAL READABILITY ENGINE: 
+           An adaptive dark mask that blends smoothly over custom background graphics.
+           This ensures white text remains readable even over white or ultra-bright images.
+        */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.75) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+        body.has-bg::before {
+            opacity: 1;
+        }
+
+        /* Presentation Content Layout Block with hardware-accelerated transitions */
+        .slide-inner-viewport {
+            text-align: center;
+            z-index: 2;
+            width: 100%;
+            max-width: 1400px;
+            opacity: 0;
+            transform: scale(0.99);
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Active Display State Rules */
+        body.visible .slide-inner-viewport {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* TYPOGRAPHY REALIGNMENT:
+           Uses fluid viewport-maximum sizing ('vmax') so text dynamically scales to fits screens.
+           Includes high-density ambient text shadowing for maximum contrast against light backdrops.
+        */
+        .output-text {
+            font-family: "Georgia", "Times New Roman", Times, serif;
+            font-size: 4.2vmax; 
+            font-weight: 700;
+            line-height: 1.35;
+            margin-bottom: 3vh;
+            color: #ffffff;
+            text-shadow: 
+                0px 2px 4px rgba(0, 0, 0, 0.8),
+                0px 4px 16px rgba(0, 0, 0, 0.6),
+                0px 0px 30px rgba(0, 0, 0, 0.4);
+            word-wrap: break-word;
+            max-height: 70vh;
+            overflow: hidden;
+        }
+        
+        .output-reference {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 1.8vmax;
+            font-weight: 700;
+            color: #ffd700; /* Distinct liturgical gold accent color */
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            text-shadow: 
+                0px 2px 4px rgba(0, 0, 0, 0.9),
+                0px 0px 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-inner-viewport">
+        <div class="output-text" id="viewText"></div>
+        <div class="output-reference" id="viewRef"></div>
+    </div>
+
+    <script>
+        const channel = new BroadcastChannel('worship_projection_system');
+        const viewText = document.getElementById('viewText');
+        const viewRef = document.getElementById('viewRef');
+
+        channel.onmessage = (event) => {
+            const data = event.data;
+
+            if (data.command === 'RENDER_SLIDE') {
+                document.body.classList.remove('visible');
+                
+                setTimeout(() => {
+                    viewText.textContent = `"${data.text}"`;
+                    viewRef.textContent = data.reference;
+
+                    if (data.backgroundImage) {
+                        document.body.style.backgroundImage = `url('${data.backgroundImage}')`;
+                        document.body.classList.add('has-bg');
+                    } else {
+                        document.body.style.backgroundImage = 'none';
+                        document.body.classList.remove('has-bg');
+                    }
+
+                    document.body.classList.add('visible');
+                }, 150);
+
+            } else if (data.command === 'CLEAR_SLIDE') {
+                document.body.classList.remove('visible');
+                
+                setTimeout(() => {
+                    viewText.textContent = '';
+                    viewRef.textContent = '';
+                    document.body.style.backgroundImage = 'none';
+                    document.body.classList.remove('has-bg');
+                }, 400);
+            }
+        };
+    </script>
+</body>
+</html>
