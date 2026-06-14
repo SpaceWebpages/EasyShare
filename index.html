@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worship Presenter - Technical Controller Deck</title>
+    
+    <script src="bible-data.js"></script>
+
+    <style>
+        /* Professional Reset & Low-Fatigue Dark Workspace */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0b0d14;
+            color: #cfd8dc;
+            padding: 16px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            letter-spacing: -0.015em;
+            overflow: hidden;
+        }
+
+        /* Broadcast Header Control Bar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e2230;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .brand-group h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #f8fafc;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .brand-group p {
+            font-size: 0.68rem;
+            color: #515f73;
+            margin-top: 2px;
+        }
+        .launch-btn {
+            background-color: #161925;
+            color: #cbd5e1;
+            border: 1px solid #282e45;
+            padding: 6px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .launch-btn:hover {
+            background-color: #202538;
+            border-color: #3b4566;
+            color: #fff;
+        }
+
+        /* Flexible Grid Layout Columns */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 360px 1fr 1fr;
+            gap: 16px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Formal Module Enclosures */
+        .panel {
+            background-color: #11131c;
+            border-radius: 6px;
+            border: 1px solid #1e2230;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            height: 100%;
+        }
+        .panel-header {
+            background-color: #161925;
+            padding: 10px 14px;
+            font-weight: 600;
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-bottom: 1px solid #1e2230;
+            color: #707e94;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Layout Blocks */
+        .picker-body, .display-box-wrapper {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Inputs */
+        .search-input {
+            width: 100%;
+            padding: 8px 10px;
+            background-color: #080a0f;
+            color: #f8fafc;
+            border: 1px solid #202538;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.78rem;
+        }
+        .search-input:focus { border-color: #4a5568; }
+
+        .dropdown-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            background-color: #080a0f;
+            color: #e2e8f0;
+            border: 1px solid #202538;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.78rem;
+            cursor: pointer;
+        }
+
+        /* Asset Drawer */
+        .asset-drawer {
+            background-color: #161925;
+            border: 1px solid #202538;
+            border-radius: 4px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .asset-drawer label {
+            font-size: 0.62rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #515f73;
+            font-weight: 700;
+        }
+        .media-flex-row { display: flex; gap: 4px; }
+        .file-upload-wrapper { position: relative; flex: 1; }
+        .file-upload-btn {
+            width: 100%; padding: 7px; background-color: #080a0f; border: 1px solid #202538;
+            border-radius: 4px; color: #94a3b8; font-size: 0.72rem; text-align: center; cursor: pointer; display: block;
+        }
+        .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; opacity: 0; width: 100%; height: 100%; }
+        .btn-reset-media { padding: 0 8px; background: none; border: 1px solid #2d2626; color: #ef4444; font-size: 0.68rem; border-radius: 4px; cursor: pointer; }
+
+        /* Verse Matrix Scroll Area */
+        .verse-list {
+            border: 1px solid #080a0f;
+            background-color: #090b12;
+            border-radius: 4px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .verse-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid #11131c;
+            cursor: pointer;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            line-height: 1.35;
+        }
+        .verse-item:hover { background-color: #161925; color: #f1f5f9; }
+        .verse-item.selected {
+            background-color: #1e2438; color: #60a5fa; border-left: 2px solid #3b82f6; padding-left: 10px;
+        }
+
+        /* Compact Previews */
+        .screen-preview, .live-projector-mirror {
+            background-color: #080a0f;
+            border: 1px solid #1e2230;
+            border-radius: 4px;
+            height: 225px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: #64748b;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        .screen-preview::before, .live-projector-mirror::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 10, 15, 0.85); z-index: -1; border-radius: 3px; display: none;
+        }
+        .screen-preview.has-bg::before, .live-projector-mirror.has-bg::before { display: block; }
+        .screen-preview.has-bg, .live-projector-mirror.has-bg { color: #ffffff; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); }
+        .meta-tag { position: absolute; bottom: 6px; font-size: 0.62rem; font-weight: 600; color: #475569; text-transform: uppercase; }
+        .has-bg .meta-tag { color: #ffd700; }
+
+        .live-projector-mirror { background-color: #000000; border: 1px solid #4c1d1d; transition: background-image 0.3s; }
+        .mirror-content-group { z-index: 2; opacity: 0; transition: opacity 0.2s; }
+        .live-projector-mirror.on-air .mirror-content-group { opacity: 1; }
+        .mirror-text { font-family: "Georgia", serif; font-size: 0.9rem; font-weight: bold; margin-bottom: 4px; }
+        .mirror-ref { font-family: sans-serif; font-size: 0.68rem; font-weight: 700; color: #ffd700; }
+
+        /* Action Triggers */
+        .btn-action {
+            width: 100%; padding: 8px; font-size: 0.72rem; font-weight: 700; border: none; border-radius: 4px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
+        }
+        .btn-go-live { background-color: #166534; color: #bbf7d0; border: 1px solid #15803d; }
+        .btn-blackout { background-color: #991b1b; color: #fca5a5; border: 1px solid #b91c1c; }
+
+        /* NEW WORKSPACE SUB-PANELS (More Functionalities) */
+        .sub-deck-extension {
+            flex: 1;
+            background-color: #090b12;
+            border: 1px solid #1e2230;
+            border-radius: 4px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+        .sub-deck-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #161925;
+            padding-bottom: 4px;
+            margin-top: 4px;
+        }
+        .sub-deck-title {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn-clear-log {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+        }
+        .btn-clear-log:hover {
+            color: #fca5a5;
+            text-decoration: underline;
+        }
+        
+        /* Functional Widgets Controls */
+        .widget-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .widget-label { font-size: 0.68rem; color: #94a3b8; flex: 1; }
+        .mini-btn {
+            background-color: #161925; border: 1px solid #202538; color: #cbd5e1;
+            padding: 4px 8px; font-size: 0.65rem; border-radius: 3px; cursor: pointer;
+        }
+        .mini-btn:hover { background-color: #202538; color: #fff; }
+        
+        /* Font Scaling and Quick Switchers */
+        .compact-slider { flex: 1; height: 4px; background: #202538; outline: none; border-radius: 2px; cursor: pointer; }
+
+        /* UPDATED: Scrollable History Queue Box */
+        .history-list { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 6px; /* Dinagdagan ang gap para hindi dikit-dikit */
+            height: 120px; /* Fixed height para hindi mag-shrink */
+            min-height: 120px; /* Siguradong hindi liliit */
+            overflow-y: auto; /* Dito lalabas ang scrollbar kung kailangan */
+            border: 1px solid #161925;
+            background-color: #06080d;
+            padding: 8px;
+            border-radius: 4px;
+            flex-shrink: 0; /* Pinigilan ang pag-shrink */
+        }
+
+        .history-pill {
+            font-size: 0.7rem; 
+            background: #131622; 
+            border: 1px solid #282e45; 
+            padding: 6px 8px;
+            border-radius: 4px; 
+            color: #94a3b8; 
+            cursor: pointer; 
+            text-align: left;
+            display: block; /* Full width */
+            white-space: normal; /* Payagan ang text na mag-wrap kung mahaba */
+            word-wrap: break-word;
+        }
+
+        /* Theme Presets Matrix */
+        .color-dot { width: 14px; height: 14px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* Interface Indicators */
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+        .status-dot.preview { background-color: #3b82f6; }
+        .status-dot.live { background-color: #ef4444; }
+
+        footer {
+            margin-top: 10px; padding-top: 8px; border-top: 1px solid #1e2230; font-size: 0.65rem; color: #475569; display: flex; gap: 16px; flex-shrink: 0;
+        }
+        footer kbd { background: #161925; padding: 1px 4px; border-radius: 3px; color: #94a3b8; border: 1px solid #282e45; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-group">
+            <h1>EasyWorship Web-Controller</h1>
+            <p>Broadcast Presentation Engine Suite (JS Data Source Architecture)</p>
+        </div>
+        <button class="launch-btn" onclick="openProjectorWindow()">Launch Program Output Window</button>
+    </header>
+
+    <div class="grid-container">
+        
+        <div class="panel">
+            <div class="panel-header">
+                <span>Scripture Navigation & Media</span>
+                <span style="font-size: 0.65rem; color: #475569;">DECK 01</span>
+            </div>
+            <div class="picker-body">
+                
+                <div class="asset-drawer">
+                    <label>Engine Canvas Background</label>
+                    <input type="text" id="mediaUrlInput" class="search-input" placeholder="Paste structural image URL..." oninput="handleMediaUrlChange()">
+                    <div class="media-flex-row">
+                        <div class="file-upload-wrapper">
+                            <span class="file-upload-btn" id="fileLabel">Upload Local File</span>
+                            <input type="file" id="mediaFileInput" accept="image/*" onchange="handleLocalFileChange(this)">
+                        </div>
+                        <button class="btn-reset-media" onclick="resetCanvasMedia()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="search-wrapper">
+                    <input type="text" id="bibleSearch" class="search-input" placeholder="Search book, chapter, or phrase..." oninput="handleSearch()">
+                </div>
+
+                <div id="navigationDropdowns" class="dropdown-row">
+                    <select id="bookDropdown" onchange="handleBookChange()">
+                        <option value="">-- Choose Book --</option>
+                    </select>
+                    <select id="chapterDropdown" onchange="handleChapterChange()" disabled>
+                        <option value="">-- Ch --</option>
+                    </select>
+                </div>
+
+                <div class="verse-list" id="verseListContainer">
+                    <div style="padding: 20px; color:#3b4566; text-align:center; font-size:0.72rem;">Select a volume sequence above to query records.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <span>Staging Preview Buffer</span>
+                <span class="status-dot preview"></span>
+            </div>
+            <div class="display-box-wrapper">
+                <div class="screen-preview" id="previewContainer">
+                    Stage clear.
+                    <div class="meta-tag" id="previewMeta"></div>
+                </div>
+                <button class="btn-action btn-go-live" onclick="sendSelectedVerseLive()">Program Mix (Enter)</button>
+                
+                <div class="sub-deck-extension">
+                    <!-- <div class="sub-deck-title-row" style="margin-top: 0;">
+                        <div class="sub-deck-title">Quick Staging Utilities</div>
+                    </div> -->
+                    
+                    <!-- <div class="widget-row">
+                        <span class="widget-label">On-Air Text Size Scale</span>
+                        <input type="range" class="compact-slider" id="textSizeSlider" min="16" max="42" value="28" oninput="adjustTextSize(this.value)">
+                    </div>
+
+                    <div class="widget-row">
+                        <span class="widget-label">Quick Lyrics Mode</span>
+                        <button class="mini-btn" onclick="injectQuickAnnouncement('Welcome to our Worship Service!')">Welcome</button>
+                        <button class="mini-btn" onclick="injectQuickAnnouncement('Please stand for the opening prayer.')">Prayer</button>
+                    </div> -->
+
+                    <div class="sub-deck-title-row">
+                        <div class="sub-deck-title">Recent Airplay Logs</div>
+                        <button class="btn-clear-log" onclick="clearAirplayHistory()">Clear Log</button>
+                    </div>
+                    
+                    <div class="history-list" id="historyLogQueue">
+                        <div id="emptyLogState" style="font-size:0.65rem; color:#323a4b; text-align:center; padding-top:4px;">No items projected yet.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <span>On-Air Production Monitor</span>
+                <span class="status-dot live"></span>
+            </div>
+            <div class="display-box-wrapper">
+                <div class="live-projector-mirror" id="liveMirrorContainer">
+                    <div class="mirror-content-group">
+                        <div class="mirror-text" id="liveMirrorText"></div>
+                        <div class="mirror-ref" id="liveMirrorRef"></div>
+                    </div>
+                    <div id="mirrorTimerNode" style="position:absolute; top:8px; right:8px; font-size:0.75rem; color:#ef4444; font-weight:700; display:none; background:rgba(0,0,0,0.6); padding:2px 6px; border-radius:3px;">05:00</div>
+                </div>
+                <button class="btn-action btn-blackout" onclick="triggerBlackout()">Emergency Blackout (F10)</button>
+                
+                <div class="sub-deck-extension">
+                    <div class="sub-deck-title-row" style="margin-top: 0;">
+                        <div class="sub-deck-title">On-Air Live Overlays & Rules</div>
+                    </div>
+                    
+                    <div class="widget-row">
+                        <span class="widget-label">Service Countdown Timer</span>
+                        <button class="mini-btn" id="timerBtn" onclick="toggleCountdownEngine()">Start 5 Min</button>
+                    </div>
+
+                    <div class="widget-row">
+                        <span class="widget-label">Lower-Third Overlay Banner</span>
+                        <input type="text" id="lowerThirdInput" class="search-input" style="padding:4px 8px; font-size:0.7rem;" placeholder="Type banner message..." oninput="pushLowerThirdAlert()">
+                    </div>
+
+                    <div class="widget-row">
+                        <span class="widget-label">Theme Output Palette</span>
+                        <div class="color-dot" style="background:#ffffff;" onclick="changeOnAirColor('#ffffff')"></div>
+                        <div class="color-dot" style="background:#ffd700;" onclick="changeOnAirColor('#ffd700')"></div>
+                        <div class="color-dot" style="background:#a7f3d0;" onclick="changeOnAirColor('#a7f3d0')"></div>
+                        <div class="color-dot" style="background:#93c5fd;" onclick="changeOnAirColor('#93c5fd')"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <span><kbd>Enter</kbd> Route staging buffer to Program Mix</span>
+        <span><kbd>F10</kbd> Execute blank master frame overlay</span>
+        <span><kbd>↑</kbd> / <kbd>↓</kbd> Auto-advance and Instant Go-Live</span>
+    </footer>
+
+    <script>
+        const channel = new BroadcastChannel('worship_projection_system');
+        
+        let structuredBible = {}; 
+        let previewState = { text: '', ref: '', index: -1 };
+        let activeElementsArray = [];
+        let globalBackgroundSource = ''; 
+        let currentTextScale = '28px';
+        let currentTextHexColor = '#ffffff';
+        let activeTimerInterval = null;
+
+        const masterBibleOrder = [
+            "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth",
+            "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah",
+            "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah",
+            "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah",
+            "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi",
+            "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians",
+            "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians",
+            "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter",
+            "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"
+        ];
+
+        function parseLocalBibleData() {
+            try {
+                if (typeof bibleRawData === 'undefined') {
+                    throw new Error("Target core array 'bibleRawData' is structural undefined inside native data path.");
+                }
+                bibleRawData.forEach((bookItem, index) => {
+                    const fullBookName = masterBibleOrder[index] || `Volume ${index + 1}`;
+                    structuredBible[fullBookName] = {};
+                    bookItem.chapters.forEach((versesArray, chIdx) => {
+                        structuredBible[fullBookName][chIdx + 1] = versesArray;
+                    });
+                });
+                populateBooksDropdown();
+                loadSavedBackground();
+            } catch (error) {
+                console.error("Core Initialization Fault:", error);
+            }
+        }
+
+        function loadSavedBackground() {
+            const savedBg = localStorage.getItem('worship_engine_bg');
+            if (savedBg) {
+                globalBackgroundSource = savedBg;
+                applyBackgroundToInterface(savedBg);
+                if (savedBg.startsWith('data:image')) {
+                    document.getElementById('fileLabel').textContent = "Saved Local Image Active";
+                } else {
+                    document.getElementById('mediaUrlInput').value = savedBg;
+                }
+            }
+        }
+
+        function populateBooksDropdown() {
+            const bookSelect = document.getElementById('bookDropdown');
+            bookSelect.innerHTML = '<option value="">-- Choose Book --</option>';
+            masterBibleOrder.forEach(bookName => {
+                if (structuredBible[bookName]) {
+                    const option = document.createElement('option');
+                    option.value = bookName; option.textContent = bookName;
+                    bookSelect.appendChild(option);
+                }
+            });
+        }
+
+        function handleBookChange() {
+            const bookName = document.getElementById('bookDropdown').value;
+            const chDropdown = document.getElementById('chapterDropdown');
+            document.getElementById('bibleSearch').value = '';
+            if (!bookName) {
+                chDropdown.innerHTML = '<option value="">-- Ch --</option>';
+                chDropdown.disabled = true;
+                return;
+            }
+            chDropdown.innerHTML = '<option value="">-- Ch --</option>';
+            Object.keys(structuredBible[bookName]).sort((a, b) => a - b).forEach(chNum => {
+                const option = document.createElement('option');
+                option.value = chNum; option.textContent = chNum;
+                chDropdown.appendChild(option);
+            });
+            chDropdown.disabled = false;
+        }
+
+        function handleChapterChange() {
+            const bookName = document.getElementById('bookDropdown').value;
+            const chNum = document.getElementById('chapterDropdown').value;
+            const container = document.getElementById('verseListContainer');
+            container.innerHTML = ''; activeElementsArray = []; previewState.index = -1;
+            if (!chNum) return;
+
+            structuredBible[bookName][chNum].forEach((verseText, index) => {
+                const verseNum = index + 1;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'verse-item';
+                itemDiv.textContent = `${verseNum}. ${verseText}`;
+                itemDiv.onclick = () => {
+                    updateActiveItemHighlight(index);
+                    setPreviewTrack(bookName, chNum, verseNum, verseText, index);
+                };
+                container.appendChild(itemDiv);
+                activeElementsArray.push(itemDiv);
+            });
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('bibleSearch').value.trim().toLowerCase();
+            const container = document.getElementById('verseListContainer');
+            
+            if (query.length < 2) {
+                if (isSearchModeActive) clearSearchFilter();
+                return;
+            }
+
+            isSearchModeActive = true;
+            document.getElementById('navigationDropdowns').style.opacity = '0.25';
+            container.innerHTML = '';
+            activeElementsArray = [];
+            previewState.index = -1;
+
+            let matchesCount = 0;
+
+            masterBibleOrder.forEach(bookName => {
+                if (!structuredBible[bookName]) return;
+
+                const sortedChapters = Object.keys(structuredBible[bookName]).sort((a, b) => a - b);
+
+                sortedChapters.forEach(chNum => {
+                    const verses = structuredBible[bookName][chNum];
+                    
+                    verses.forEach((verseText, vIdx) => {
+                        const verseNum = vIdx + 1;
+                        const matchReferenceString = `${bookName} ${chNum}:${verseNum}`.toLowerCase();
+                        const basicReferenceString = `${bookName} ${chNum}`.toLowerCase();
+                        
+                        if (matchReferenceString.includes(query) || basicReferenceString === query || verseText.toLowerCase().includes(query)) {
+                            if (matchesCount < 150) { 
+                                const itemDiv = document.createElement('div');
+                                itemDiv.className = 'verse-item';
+                                itemDiv.innerHTML = `<strong style="color: #60a5fa; font-weight:600;">${bookName} ${chNum}:${verseNum}</strong><br><span style="color:#f1f5f9">${verseText}</span>`;
+                                
+                                const currentIndexPlaceholder = matchesCount;
+                                itemDiv.onclick = () => {
+                                    updateActiveItemHighlight(currentIndexPlaceholder);
+                                    setPreviewTrack(bookName, chNum, verseNum, verseText, currentIndexPlaceholder);
+                                };
+
+                                container.appendChild(itemDiv);
+                                activeElementsArray.push(itemDiv);
+                            }
+                            matchesCount++;
+                        }
+                    });
+                });
+            });
+
+            showSearchBanner(matchesCount);
+            
+            if (matchesCount === 0) {
+                container.innerHTML = '<div style="padding: 24px; color:#ef4444; text-align:center; font-size:0.8rem;">No matching localized database text records extracted.</div>';
+            }
+        }
+
+        function applyBackgroundToInterface(src) {
+            globalBackgroundSource = src;
+            const previewContainer = document.getElementById('previewContainer');
+            if (src) {
+                previewContainer.style.backgroundImage = `url('${src}')`;
+                previewContainer.classList.add('has-bg');
+            } else {
+                previewContainer.style.backgroundImage = 'none';
+                previewContainer.classList.remove('has-bg');
+            }
+        }
+
+        function handleMediaUrlChange() {
+            const url = document.getElementById('mediaUrlInput').value.trim();
+            document.getElementById('mediaFileInput').value = '';
+            document.getElementById('fileLabel').textContent = 'Upload Local File';
+            applyBackgroundToInterface(url);
+            if (url) localStorage.setItem('worship_engine_bg', url);
+            else localStorage.removeItem('worship_engine_bg');
+        }
+
+        function handleLocalFileChange(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('mediaUrlInput').value = '';
+            document.getElementById('fileLabel').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                applyBackgroundToInterface(base64String);
+                try { localStorage.setItem('worship_engine_bg', base64String); } 
+                catch (error) { alert("File size warning: Image is too large for storage persistence."); }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetCanvasMedia() {
+            document.getElementById('mediaUrlInput').value = '';
+            document.getElementById('mediaFileInput').value = '';
+            document.getElementById('fileLabel').textContent = 'Upload Local File';
+            applyBackgroundToInterface('');
+            localStorage.removeItem('worship_engine_bg');
+            channel.postMessage({ command: 'SET_BACKGROUND', backgroundImage: '' });
+            const liveMirror = document.getElementById('liveMirrorContainer');
+            liveMirror.style.backgroundImage = 'none'; liveMirror.classList.remove('has-bg');
+        }
+
+        function updateActiveItemHighlight(targetIdx) {
+            activeElementsArray.forEach((el, idx) => { el.classList.toggle('selected', idx === targetIdx); });
+        }
+
+        function setPreviewTrack(book, ch, num, text, arrayIndex) {
+            previewState = { text: text, ref: `${book} ${ch}:${num}`, index: arrayIndex };
+            document.getElementById('previewContainer').innerHTML = `"${text}"<div class="meta-tag" id="previewMeta">${previewState.ref}</div>`;
+        }
+
+        function sendSelectedVerseLive() {
+            if (!previewState.text) return;
+            const liveMirror = document.getElementById('liveMirrorContainer');
+            liveMirror.classList.remove('on-air');
+            
+            setTimeout(() => {
+                const liveTextEl = document.getElementById('liveMirrorText');
+                liveTextEl.textContent = `"${previewState.text}"`;
+                liveTextEl.style.fontSize = `${parseInt(currentTextScale) * 0.65}px`; 
+                liveTextEl.style.color = currentTextHexColor;
+                
+                document.getElementById('liveMirrorRef').textContent = previewState.ref;
+                if (globalBackgroundSource) {
+                    liveMirror.style.backgroundImage = `url('${globalBackgroundSource}')`;
+                    liveMirror.classList.add('has-bg');
+                } else {
+                    liveMirror.style.backgroundImage = 'none'; liveMirror.classList.remove('has-bg');
+                }
+                liveMirror.classList.add('on-air');
+                
+                appendHistoryRecord(previewState.text, previewState.ref);
+            }, 100);
+
+            channel.postMessage({
+                command: 'RENDER_SLIDE', 
+                text: previewState.text, 
+                reference: previewState.ref, 
+                backgroundImage: globalBackgroundSource,
+                fontSize: currentTextScale,
+                fontColor: currentTextHexColor
+            });
+        }
+
+        function triggerBlackout() {
+            const liveMirror = document.getElementById('liveMirrorContainer');
+            liveMirror.classList.remove('on-air');
+            setTimeout(() => {
+                document.getElementById('liveMirrorText').textContent = '';
+                document.getElementById('liveMirrorRef').textContent = '';
+                liveMirror.style.backgroundImage = 'none'; liveMirror.classList.remove('has-bg');
+            }, 300);
+            channel.postMessage({ command: 'CLEAR_SLIDE' });
+        }
+
+        function adjustTextSize(pixels) {
+            currentTextScale = pixels + 'px';
+            document.getElementById('liveMirrorText').style.fontSize = (pixels * 0.65) + 'px';
+            channel.postMessage({ command: 'SET_TEXT_SIZE', fontSize: currentTextScale });
+        }
+
+        function changeOnAirColor(hex) {
+            currentTextHexColor = hex;
+            document.getElementById('liveMirrorText').style.color = hex;
+            channel.postMessage({ command: 'SET_TEXT_COLOR', fontColor: hex });
+        }
+
+        function injectQuickAnnouncement(message) {
+            previewState = { text: message, ref: 'Announcement Card', index: -1 };
+            document.getElementById('previewContainer').innerHTML = `"${message}"<div class="meta-tag" id="previewMeta">Announcement</div>`;
+            sendSelectedVerseLive();
+        }
+
+        /* NEW: System Append with Scroll Support */
+        function appendHistoryRecord(text, ref) {
+            const queue = document.getElementById('historyLogQueue');
+            const emptyState = document.getElementById('emptyLogState');
+            if (emptyState) emptyState.remove();
+            
+            // Check for duplicates to prevent spamming the exact same item consecutively
+            if (queue.firstChild && queue.firstChild.textContent.includes(ref)) return;
+
+            const pill = document.createElement('div');
+            pill.className = 'history-pill';
+            pill.textContent = `[${ref}] ${text}`;
+            pill.onclick = () => {
+                previewState = { text: text, ref: ref, index: -1 };
+                document.getElementById('previewContainer').innerHTML = `"${text}"<div class="meta-tag" id="previewMeta">${ref}</div>`;
+                sendSelectedVerseLive();
+            };
+            
+            queue.insertBefore(pill, queue.firstChild);
+        }
+
+        /* NEW: Clear Log Action Control */
+        function clearAirplayHistory() {
+            const queue = document.getElementById('historyLogQueue');
+            queue.innerHTML = '<div id="emptyLogState" style="font-size:0.65rem; color:#323a4b; text-align:center; padding-top:4px;">No items projected yet.</div>';
+        }
+
+        function pushLowerThirdAlert() {
+            const val = document.getElementById('lowerThirdInput').value.trim();
+            channel.postMessage({ command: 'UPDATE_LOWER_THIRD', message: val });
+        }
+
+        function toggleCountdownEngine() {
+            const node = document.getElementById('mirrorTimerNode');
+            const btn = document.getElementById('timerBtn');
+            if (activeTimerInterval) {
+                clearInterval(activeTimerInterval);
+                activeTimerInterval = null;
+                node.style.display = 'none';
+                btn.textContent = 'Start 5 Min';
+                channel.postMessage({ command: 'STOP_COUNTDOWN' });
+            } else {
+                let duration = 300; 
+                node.style.display = 'block';
+                btn.textContent = 'Stop Timer';
+                
+                activeTimerInterval = setInterval(() => {
+                    let mins = Math.floor(duration / 60);
+                    let secs = duration % 60;
+                    let displayStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    node.textContent = displayStr;
+                    channel.postMessage({ command: 'START_COUNTDOWN', durationString: displayStr });
+                    if (duration <= 0) {
+                        clearInterval(activeTimerInterval);
+                        activeTimerInterval = null;
+                        node.style.display = 'none';
+                        btn.textContent = 'Start 5 Min';
+                    }
+                    duration--;
+                }, 1000);
+            }
+        }
+
+        function openProjectorWindow() {
+            window.open('projection.html', 'WorshipProjectorOutputTargetWindow', 'width=1024,height=768');
+        }
+
+        window.addEventListener('keydown', (event) => {
+            if (document.activeElement === document.getElementById('bibleSearch') || 
+                document.activeElement === document.getElementById('mediaUrlInput') ||
+                document.activeElement === document.getElementById('lowerThirdInput')) {
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                sendSelectedVerseLive();
+            } else if (event.key === 'F10') {
+                event.preventDefault();
+                triggerBlackout();
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                let nextIdx = previewState.index + 1;
+                if (nextIdx < activeElementsArray.length) {
+                    activeElementsArray[nextIdx].click();
+                    sendSelectedVerseLive();
+                    activeElementsArray[nextIdx].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                let prevIdx = previewState.index - 1;
+                if (prevIdx >= 0) {
+                    activeElementsArray[prevIdx].click();
+                    sendSelectedVerseLive();
+                    activeElementsArray[prevIdx].scrollIntoView({ block: 'nearest' });
+                }
+            }
+        });
+
+        parseLocalBibleData();
+    </script>
+</body>
+</html>
