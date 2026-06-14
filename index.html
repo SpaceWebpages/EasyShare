@@ -532,7 +532,7 @@
 
         function populateBooksDropdown() {
             const bookSelect = document.getElementById('bookDropdown');
-            bookSelect.innerHTML = '<option value="">-- Choose Book --</option>';
+            bookSelect.innerHTML = '<option value="">Book</option>';
             masterBibleOrder.forEach(bookName => {
                 if (structuredBible[bookName]) {
                     const option = document.createElement('option');
